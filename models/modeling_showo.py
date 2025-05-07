@@ -233,7 +233,6 @@ class Showo(ModelMixin, ConfigMixin):
                 input_embeddings = torch.cat([input_embeddings, idx_next_embeddings], dim=1)
             else:
                 idx = torch.cat((idx, idx_next), dim=1)
-
             if eot_token is not None and idx_next.cpu() == eot_token:
                 break
 
