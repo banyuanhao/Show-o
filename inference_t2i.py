@@ -64,7 +64,7 @@ if __name__ == '__main__':
     vq_model.requires_grad_(False)
     vq_model.eval()
 
-    model = Showo.from_pretrained(config.model.showo.pretrained_model_path).to(device)
+    model = Showo.from_pretrained(config.model.showo.pretrained_model_path, low_cpu_mem_usage=False).to(device)
     model.eval()
 
     mask_token_id = model.config.mask_token_id

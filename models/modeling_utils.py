@@ -736,7 +736,8 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                 # if device_map is None, load the state dict and move the params from meta device to the cpu
                 if device_map is None and not is_sharded:
                     param_device = "cpu"
-                    state_dict = load_state_dict(model_file, variant=variant)
+                    assert variant is None 
+                    state_dict = load_state_dict(model_file)
                     model._convert_deprecated_attention_blocks(state_dict)
                     # move the params from meta device to cpu
                     missing_keys = set(model.state_dict().keys()) - set(state_dict.keys())
@@ -751,7 +752,7 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                     unexpected_keys = load_model_dict_into_meta(
                         model,
                         state_dict,
-                        device=param_device,
+                        # device=param_device,
                         dtype=torch_dtype,
                         model_name_or_path=pretrained_model_name_or_path,
                     )
@@ -761,9 +762,10 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                             unexpected_keys = [k for k in unexpected_keys if re.search(pat, k) is None]
 
                     if len(unexpected_keys) > 0:
-                        logger.warning(
-                            f"Some weights of the model checkpoint were not used when initializing {cls.__name__}: \n {[', '.join(unexpected_keys)]}"
-                        )
+                        if None not in unexpected_keys:
+                            logger.warning(
+                                f"Some weights of the model checkpoint were not used when initializing {cls.__name__}: \n {[', '.join(unexpected_keys)]}"
+                            )
 
                 else:  # else let accelerate handle loading and dispatching.
                     # Load weights and dispatch according to the device_map
@@ -828,8 +830,8 @@ class ModelMixin(torch.nn.Module, PushToHubMixin):
                 }
             else:
                 model = cls.from_config(config, **unused_kwargs)
-
-                state_dict = load_state_dict(model_file, variant=variant)
+                assert variant is None, "variant is not supported when low_cpu_mem_usage is False"
+                state_dict = load_state_dict(model_file)
                 model._convert_deprecated_attention_blocks(state_dict)
 
                 model, missing_keys, unexpected_keys, mismatched_keys, error_msgs = cls._load_pretrained_model(
